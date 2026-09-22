@@ -1,6 +1,6 @@
 {
   "name": "ai-usage-widget",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "claude.ai 사용량을 바탕화면에 보여주는 위젯",
   "author": {
     "name": "TRUE"

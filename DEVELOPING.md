@@ -23,8 +23,8 @@ cd desktop
 npm run dist
 ```
 
-- `desktop/dist/AI Usage Widget Setup 0.3.0.exe` — 설치형
-- `desktop/dist/AI Usage Widget 0.3.0.exe` — 포터블
+- `desktop/dist/AI Usage Widget Setup 0.4.0.exe` — 설치형
+- `desktop/dist/AI Usage Widget 0.4.0.exe` — 포터블
 
 > Windows **개발자 모드**가 꺼져 있으면 `winCodeSign` 압축 해제 단계에서 심볼릭 링크 권한 오류가 납니다.
 > 설정 → 개발자용 → 개발자 모드를 켜면 해결됩니다.
@@ -38,7 +38,7 @@ npm run dist
 3. `npm run dist`
 4. 체크섬을 함께 공유합니다.
    ```powershell
-   Get-FileHash "desktop\dist\AI Usage Widget Setup 0.3.0.exe" -Algorithm SHA256
+   Get-FileHash "desktop\dist\AI Usage Widget Setup 0.4.0.exe" -Algorithm SHA256
    ```
 5. **exe 파일과 [README.md](README.md)를 같이 전달합니다.** README는 그대로 배포해도 되도록
    사용자용 내용만 담겨 있습니다 (개발자용 내용은 이 문서에 분리해 두었습니다).

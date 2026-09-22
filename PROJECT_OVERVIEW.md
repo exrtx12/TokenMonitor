@@ -7,7 +7,7 @@
 
 ## 1. 한 줄 요약
 
-로그인된 **claude.ai / ChatGPT의 사용량 한도**(5시간 세션, 7일 주간)를 5분마다 조회해서,
+로그인된 **claude.ai / ChatGPT / Gemini의 사용량 한도**(5시간 세션, 7일 주간)를 5분마다 조회해서,
 바탕화면에 항상 떠 있는 작은 위젯에 막대그래프와 리셋 카운트다운으로 보여주는 Electron 앱입니다.
 
 ---
@@ -28,6 +28,7 @@
 | 7 | 최종적으로 **데스크톱 위젯만 사용**하기로 결정 |
 | 8 | 배포를 앞두고 **백그라운드 메모리 522MB가 과하다**는 문제 → 상시 숨김 창을 걷어내고 `session.fetch()`로 전환, **341MB로 감소** (4절 참고) |
 | 9 | 여러 사람에게 배포하게 되면서 **쓰는 AI만 골라 보는 기능**이 필요해짐 → `enabled`를 사용자 설정으로 바꾸고 트레이에 토글 추가. 같은 틀에 **Gemini 슬롯**을 '준비 중' 상태로 추가 |
+| 10 | Gemini에도 **사용량 측정기가 생긴 것**을 확인 → 네트워크를 직접 들여다보는 탐색 도구(`tools/probe-gemini.js`)로 엔드포인트를 찾아내 **Gemini 연동 완료** |
 
 > **중요**: 7단계 결정에 따라 README에서는 크롬 확장 내용을 걷어냈지만, **확장 프로그램 코드 자체는
 > 저장소 루트에 그대로 남아 있습니다**. 루트의 `manifest.json`, `background.js`, `popup/`,
@@ -48,13 +49,17 @@ TokenMonitor/
 │   │   ├── base.js              공통 계약: UsageError(에러 코드 정의)
 │   │   ├── claude.js            claude.ai 사용량 조회 + 조직(org) 자동 감지
 │   │   ├── chatgpt.js           chatgpt.com 사용량 조회
-│   │   ├── gemini.js            자리만 있는 '준비 중' 슬롯 (엔드포인트 미확인)
+│   │   ├── gemini.js            gemini.google.com 사용량 조회 (batchexecute RPC)
 │   │   └── registry.js          앱이 아는 전체 서비스 목록 (여기에 등록해야 인식)
 │   ├── widget/                  위젯 UI (index.html / style.css / renderer.js)
 │   ├── assets/                  트레이·앱 아이콘
 │   └── dist/                    빌드 결과물 (.exe) — 빌드 시 생성
 │
-├── samples/claude-usage.json ← 실제 API 응답 샘플 (구현 근거)
+├── samples/                  ← 실제 API 응답 샘플 (구현 근거)
+│   ├── claude-usage.json
+│   └── gemini-usage.txt      Gemini 응답 + 요청 형식 메모
+├── desktop/tools/            ← 일회성 조사 도구 (패키징 제외)
+│   └── probe-gemini.js       네트워크를 통째로 덤프해 엔드포인트를 찾는 용도
 ├── scripts/*.py              ← 아이콘 생성 스크립트 (Pillow)
 ├── README.md                 ← 사용자용 안내 (배포 시 exe와 함께 전달, 개발 내용 없음)
 ├── DEVELOPING.md             ← 개발자용: 실행 / 빌드 / 배포 체크리스트 / 서비스 추가
@@ -128,6 +133,30 @@ TokenMonitor/
 `widgetHeight()`의 추정치는 렌더러가 첫 화면을 그리기 전, 창을 처음 만들 때만 씁니다.
 (추정 공식을 쓰던 때는 실제보다 106px 큰 창이 떠 있었습니다.)
 
+### Gemini는 왜 다른가
+
+Claude·ChatGPT는 사용률을 주는 REST 엔드포인트가 있지만, Gemini는 Google의
+**batchexecute RPC**를 씁니다. 그래서 두 단계입니다.
+
+1. `GET /app` 의 HTML에서 **XSRF 토큰**을 긁어냅니다 (`"SNlM0e":"..."`).
+2. `POST /_/BardChatUi/data/batchexecute?rpcids=jSf9Qc` 에
+   `f.req=[[["jSf9Qc","[]",null,"generic"]]]&at=<토큰>` 을 보냅니다. 인자는 없습니다.
+
+응답은 `)]}'` 가드 뒤에 길이/본문 줄이 번갈아 오고, 실제 데이터는 `["wrb.fr","jSf9Qc","<JSON 문자열>"]`
+안에 **문자열로 한 번 더 감싸여** 있습니다. 풀면:
+
+```
+[ ?, [ [남은량, 사용비율, kind, [[리셋초, 리셋나노초]]], ... ], ? ]
+```
+
+- `kind` 1 = 세션(5시간), 2 = 주간(7일)
+- **배열 순서는 고정이 아닙니다.** 실제로 주간이 먼저 온 응답도 있었으니 반드시 `kind`로 구분해야 합니다.
+- 두 번째 값이 사용 비율입니다(0.02 == UI의 2%). 첫 번째 값은 limit이 아니라 **남은 양**이고
+  쓸수록 줄어듭니다. 퍼센트는 다른 서비스와 마찬가지로 **서버가 준 값을 그대로** 씁니다.
+
+이 형식은 문서화된 API가 아니라 관찰로 알아낸 것이라, 언제든 바뀔 수 있습니다. 바뀌면
+`SCHEMA_ERROR`로 드러나며, `tools/probe-gemini.js`로 다시 찾으면 됩니다.
+
 ### 데이터 흐름
 ```
 setInterval(5분)
@@ -153,8 +182,12 @@ module.exports = {
 };
 ```
 
-`fetchUsage`는 `runFetch(url, extraHeaders)`를 받아 씁니다. 이 함수가 `session.fetch`를 쓸지
-페이지 컨텍스트를 쓸지는 `main.js`가 정하므로, 서비스 모듈은 신경 쓸 필요가 없습니다.
+`fetchUsage`는 `runFetch(url, options)`를 받아 씁니다. `options`는 `{ headers, method, body }`이고,
+생략하면 GET입니다 (Gemini만 POST를 씁니다). 이 함수가 `session.fetch`를 쓸지 페이지 컨텍스트를
+쓸지는 `main.js`가 정하므로, 서비스 모듈은 신경 쓸 필요가 없습니다.
+
+`comingSoon: true`로 두면 폴링하지 않고 '준비 중' 카드만 띄웁니다. 현재 쓰는 서비스는 없지만,
+엔드포인트를 아직 못 찾은 서비스를 미리 등록해 둘 때 쓰라고 남겨둔 장치입니다.
 
 에러는 반드시 `UsageError`로 던지며, 코드에 따라 위젯 UI가 달라집니다:
 `AUTH_ERROR`(로그인 버튼) / `MULTI_ACCOUNT`(조직 선택 버튼) / `SCHEMA_ERROR` / `NETWORK_ERROR` / `ACCOUNT_NOT_SET`.
@@ -208,16 +241,12 @@ module.exports = {
 
 ## 7. 현재 상태와 남은 것
 
-**되는 것**: Claude/ChatGPT 사용량 표시, 5분 자동 갱신, KST 리셋 시각 + 카운트다운, 80% 이상 빨간 막대,
+**되는 것**: Claude/ChatGPT/Gemini 사용량 표시, 5분 자동 갱신, KST 리셋 시각 + 카운트다운, 80% 이상 빨간 막대,
 리셋 알림, 트레이 제어, 위치 기억, 시작 프로그램 등록, exe 패키징.
 
 **안 된 것 / 해볼 만한 것**:
-- **Gemini 연동** — `desktop/services/gemini.js`에 자리는 잡아뒀지만 `comingSoon: true` 상태입니다.
-  **막힌 지점은 엔드포인트입니다.** 이 앱은 사이트가 이미 계산해 둔 사용률을 읽어오는 구조인데
-  (Claude는 `/api/organizations/{id}/usage`, ChatGPT는 `/backend-api/wham/usage`),
-  Gemini 웹에서 그에 대응하는 요청이 확인되지 않았습니다. 애초에 Gemini UI가 한도를 %로 보여주지
-  않는다면 읽어올 숫자 자체가 없는 것이라, 먼저 **그게 존재하는지부터** 확인해야 합니다.
-  확인되면 `fetchUsage`를 채우고 `comingSoon`만 지우면 됩니다.
+- **Gemini 응답 형식 의존** — 문서화되지 않은 RPC라 Google이 바꾸면 깨집니다 (4절 참고).
+  깨지면 위젯에 `SCHEMA_ERROR`로 드러납니다.
 - **자동 업데이트 없음** — 코드를 고치면 다시 빌드해서 배포해야 하고, 받는 쪽도 직접 다시 설치해야 합니다.
 - **코드 서명 없음** — 배포하면 수신자 PC에서 SmartScreen 경고가 뜹니다 (정상, README에 안내 문구 있음).
 - **메모리 341MB** — 남은 건 대부분 Electron 자체 베이스라인(gpu 109 / main 99 / 렌더러 79 / utility 53)이라,

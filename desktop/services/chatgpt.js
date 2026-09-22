@@ -30,7 +30,7 @@ function assertUsageShape(data) {
  * @param {(url: string) => Promise<{ok:boolean, status:number, contentType:string, body:string, networkError?:string}>} runFetch
  */
 async function apiFetch(runFetch, path, extraHeaders) {
-  const res = await runFetch(`${BASE}${path}`, extraHeaders);
+  const res = await runFetch(`${BASE}${path}`, extraHeaders ? { headers: extraHeaders } : undefined);
   if (res.networkError) {
     throw new UsageError("NETWORK_ERROR", `네트워크 오류: ${res.networkError}`);
   }

@@ -12,3 +12,6 @@ npm-debug.log*
 # OS
 Thumbs.db
 .DS_Store
+
+# 탐색 도구가 덤프한 네트워크 기록 (응답 본문에 계정 정보가 섞일 수 있음)
+desktop/tools/out/

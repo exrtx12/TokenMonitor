@@ -23,11 +23,16 @@ const PAGE_FALLBACK_CODES = new Set(["AUTH_ERROR", "NETWORK_ERROR", "SCHEMA_ERRO
 // Issues the request straight from the main process on the service's persisted
 // session, so its cookies ride along exactly as they would in a tab — but with
 // no renderer process to keep alive.
-async function runNetFetch(service, url, extraHeaders) {
+async function runNetFetch(service, url, options) {
   const ses = session.fromPartition(service.partition);
+  // Named requestBody, not body: the response body below is also `body` and
+  // shadowing it inside the try block throws a TDZ ReferenceError.
+  const { headers, method, body: requestBody } = options || {};
   try {
     const res = await ses.fetch(url, {
       credentials: "include",
+      method: method || "GET",
+      body: requestBody,
       headers: Object.assign(
         {
           Accept: "application/json",
@@ -37,7 +42,7 @@ async function runNetFetch(service, url, extraHeaders) {
           Referer: service.homeUrl,
           Origin: new URL(service.homeUrl).origin,
         },
-        extraHeaders || {}
+        headers || {}
       ),
     });
     const body = await res.text();
@@ -104,16 +109,19 @@ function releasePageWindow(service) {
 // Runs fetch() inside the service's own page context so the request carries the
 // same session cookies a normal browser tab would. Only used when runNetFetch
 // can't get through, since it needs a live renderer.
-async function runPageFetch(service, url, extraHeaders) {
+async function runPageFetch(service, url, options) {
   const win = await getPageWindow(service);
   if (!win || win.isDestroyed()) return { networkError: "페이지 컨텍스트를 열지 못했습니다." };
 
+  const { headers, method, body: requestBody } = options || {};
   const script = `
     (async () => {
       try {
         const r = await fetch(${JSON.stringify(url)}, {
           credentials: "include",
-          headers: Object.assign({ Accept: "application/json" }, ${JSON.stringify(extraHeaders || {})}),
+          method: ${JSON.stringify(method || "GET")},
+          body: ${requestBody === undefined ? "undefined" : JSON.stringify(requestBody)},
+          headers: Object.assign({ Accept: "application/json" }, ${JSON.stringify(headers || {})}),
         });
         const text = await r.text();
         return { ok: r.ok, status: r.status, contentType: r.headers.get("content-type") || "", body: text };
@@ -129,15 +137,16 @@ async function runPageFetch(service, url, extraHeaders) {
   }
 }
 
-function runFetch(service, url, extraHeaders) {
+// options: { headers, method, body } — Gemini needs POST, the others are GETs.
+function runFetch(service, url, options) {
   return fetchModes.get(service.id) === "page"
-    ? runPageFetch(service, url, extraHeaders)
-    : runNetFetch(service, url, extraHeaders);
+    ? runPageFetch(service, url, options)
+    : runNetFetch(service, url, options);
 }
 
 function fetchUsageOnce(service) {
   const settings = store.getSettings(service.id);
-  return service.fetchUsage(settings, (url, headers) => runFetch(service, url, headers));
+  return service.fetchUsage(settings, (url, options) => runFetch(service, url, options));
 }
 
 // Prefers the renderer-free path and only pays for a page context if the site

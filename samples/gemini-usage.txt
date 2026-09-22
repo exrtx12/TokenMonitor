@@ -1,0 +1,21 @@
+# Gemini 사용량 응답 샘플 (구현 근거)
+#
+# 요청: POST https://gemini.google.com/_/BardChatUi/data/batchexecute
+#         ?rpcids=jSf9Qc&source-path=%2Fusage&hl=ko&rt=c
+#       body: f.req=[[["jSf9Qc","[]",null,"generic"]]]&at=<SNlM0e 토큰>
+#       토큰은 https://gemini.google.com/app HTML 안의 "SNlM0e":"..." 에서 추출
+#
+# 내부 payload 형식:
+#   [ ?, [ [남은량, 사용비율, kind, [[리셋초, 리셋나노초]]], ... ], ? ]
+#   kind 1 = 세션(5시간), kind 2 = 주간(7일)
+#   사용비율 0.02 == UI 표시 2%
+#   ※ 배열 순서는 고정이 아님. kind로 구분할 것.
+#
+# 아래는 2026-09-22 실제 응답 원문:
+
+)]}'
+
+201
+[["wrb.fr","jSf9Qc","[1,[[586,0.02,1,[[1790090711,527048000]]],[12082,0.00114683,2,[[1790555111,527091000]]]],false]",null,null,null,"generic"],["di",553],["af.httprm",552,"-2005110121184099208",49]]
+25
+[["e",4,null,null,237]]
