@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>AI Usage Monitor</title>
+<link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>AI Usage Monitor</h1>
+      <button id="refreshBtn" title="새로고침">⟳</button>
+    </header>
+
+    <div id="services"></div>
+
+    <template id="service-card-template">
+      <section class="card">
+        <div class="card-header">
+          <span class="service-name"></span>
+          <span class="org-name"></span>
+        </div>
+
+        <div class="error-banner" hidden>
+          <p class="error-message"></p>
+          <div class="error-actions"></div>
+        </div>
+
+        <div class="bars">
+          <div class="bar-row" data-bucket="session">
+            <div class="bar-label">
+              <span>세션 (5시간)</span>
+              <span class="bar-percent">-</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+            <div class="bar-meta">
+              <span class="reset-time">-</span>
+              <span class="countdown">-</span>
+            </div>
+          </div>
+
+          <div class="bar-row" data-bucket="weekly">
+            <div class="bar-label">
+              <span>주간 (7일)</span>
+              <span class="bar-percent">-</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+            <div class="bar-meta">
+              <span class="reset-time">-</span>
+              <span class="countdown">-</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="fetched-at">-</p>
+
+        <details class="settings">
+          <summary>설정</summary>
+          <div class="settings-body">
+            <label>
+              조직(Org) ID
+              <input type="text" class="org-id-input" placeholder="자동 감지됨" />
+            </label>
+            <div class="settings-actions">
+              <button class="save-org-btn">저장</button>
+              <button class="auto-detect-btn">자동 재감지</button>
+            </div>
+          </div>
+        </details>
+      </section>
+    </template>
+  </div>
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

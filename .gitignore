@@ -1,0 +1,14 @@
+# 의존성 — npm install 로 복원
+node_modules/
+
+# 빌드 산출물 — exe 한 개가 80MB가 넘습니다.
+# 배포용 파일은 GitHub Releases 에 올립니다.
+dist/
+
+# 실행 중 생기는 것들
+*.log
+npm-debug.log*
+
+# OS
+Thumbs.db
+.DS_Store

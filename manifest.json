@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "AI Usage Monitor",
+  "version": "0.1.0",
+  "description": "claude.ai 사용량(세션/주간 한도)을 실시간으로 툴바와 팝업에 표시합니다.",
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "AI Usage Monitor"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": ["alarms", "storage", "notifications"],
+  "host_permissions": ["https://claude.ai/*", "https://chatgpt.com/*"]
+}

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>AI Usage Widget</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="root">
+    <div class="drag-bar">
+      <span class="app-title">AI Usage Widget</span>
+      <div class="header-actions">
+        <button id="refreshAllBtn" title="전체 새로고침">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </button>
+        <button id="hideBtn" title="숨기기">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <p id="empty-state" hidden>
+      표시할 서비스가 없습니다.<br />
+      트레이 아이콘 우클릭 → <b>표시할 서비스</b>
+    </p>
+
+    <div id="services"></div>
+  </div>
+
+  <template id="service-card-template">
+    <section class="card">
+      <div class="card-header">
+        <span class="service-name"></span>
+        <span class="org-name"></span>
+        <button class="settings-btn" title="설정">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="error-banner" hidden>
+        <p class="error-message"></p>
+        <div class="error-actions"></div>
+      </div>
+
+      <p class="coming-soon" hidden>지원 준비 중입니다.</p>
+
+      <div class="bars">
+        <div class="bar-row" data-bucket="session">
+          <div class="bar-label">
+            <span>세션 (5시간)</span>
+            <span class="bar-percent">-</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill"></div></div>
+          <div class="bar-meta">
+            <span class="reset-time">-</span>
+            <span class="countdown">-</span>
+          </div>
+        </div>
+
+        <div class="bar-row" data-bucket="weekly">
+          <div class="bar-label">
+            <span>주간 (7일)</span>
+            <span class="bar-percent">-</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill"></div></div>
+          <div class="bar-meta">
+            <span class="reset-time">-</span>
+            <span class="countdown">-</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="fetched-at">-</p>
+
+      <div class="settings-panel">
+        <button class="close-settings" title="닫기">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+            <line x1="5" y1="5" x2="19" y2="19"></line>
+            <line x1="19" y1="5" x2="5" y2="19"></line>
+          </svg>
+        </button>
+        <label>
+          조직(Org) ID
+          <input type="text" class="org-id-input" placeholder="자동 감지됨" />
+        </label>
+        <div class="settings-actions">
+          <button class="save-org-btn">저장</button>
+          <button class="auto-detect-btn">자동 재감지</button>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

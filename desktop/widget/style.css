@@ -1,0 +1,212 @@
+:root {
+  color-scheme: light dark;
+  --bg-card: rgba(30, 33, 39, 0.9);
+  --fg: #f3f4f6;
+  --muted: #9ca3af;
+  --track: #3a3f47;
+  --fill-normal: #6f93ff;
+  --fill-warning: #ff5c52;
+  --border: rgba(255, 255, 255, 0.08);
+  --danger-bg: rgba(179, 38, 30, 0.25);
+  --danger-fg: #ff8a80;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  width: 300px;
+  background: transparent;
+  font-family: -apple-system, "Segoe UI", Pretendard, sans-serif;
+  font-size: 12px;
+  color: var(--fg);
+  overflow: hidden;
+}
+
+#root {
+  -webkit-app-region: drag;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+.drag-bar {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+.app-title { font-weight: 600; font-size: 12px; flex: 1; color: var(--muted); }
+
+.header-actions {
+  -webkit-app-region: no-drag;
+  display: flex;
+  gap: 2px;
+}
+.header-actions button, .settings-btn, .close-settings {
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.header-actions button:hover, .settings-btn:hover { background: rgba(255, 255, 255, 0.12); }
+#refreshAllBtn.spinning svg { animation: spin 0.8s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+#services {
+  -webkit-app-region: no-drag;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.service-name { font-weight: 600; font-size: 13px; }
+.org-name { color: var(--muted); font-size: 10px; flex: 1; }
+
+.error-banner {
+  background: var(--danger-bg);
+  color: var(--danger-fg);
+  border-radius: 8px;
+  padding: 7px 9px;
+  margin-bottom: 8px;
+}
+.error-message { margin: 0 0 6px; }
+.error-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.error-actions button {
+  border: 1px solid var(--danger-fg);
+  background: transparent;
+  color: var(--danger-fg);
+  border-radius: 6px;
+  padding: 3px 8px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.bar-row { margin-bottom: 10px; }
+.bar-row:last-child { margin-bottom: 0; }
+
+.bar-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.bar-percent { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.bar-track {
+  height: 7px;
+  background: var(--track);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--fill-normal);
+  transition: width 0.3s ease;
+}
+.bar-fill.warning { background: var(--fill-warning); }
+
+.bar-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.fetched-at {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 9px;
+  text-align: right;
+}
+
+.settings-panel {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 14px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  backdrop-filter: blur(6px);
+}
+.settings-panel.open { display: flex; }
+.close-settings { align-self: flex-end; }
+.settings-panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.settings-panel input {
+  font: inherit;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg);
+}
+.settings-actions { display: flex; gap: 6px; }
+.settings-actions button {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg);
+  border-radius: 6px;
+  padding: 6px 0;
+  cursor: pointer;
+  font-size: 11px;
+  flex: 1;
+}
+.settings-actions button:hover { background: rgba(255, 255, 255, 0.14); }
+
+#empty-state {
+  -webkit-app-region: no-drag;
+  margin: 0;
+  padding: 14px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  text-align: center;
+  backdrop-filter: blur(6px);
+}
+
+/* Not an error — a slot that isn't wired up yet, so it stays neutral. */
+.coming-soon {
+  margin: 0;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  text-align: center;
+}
